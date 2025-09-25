@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { WeatherData, ForecastData, WeatherState } from "@/types/weather";
+import { WeatherState } from "@/types/weather";
 import { weatherApi } from "@/services/weatherApi";
 import { storage } from "@/utils/storage";
 
@@ -39,7 +39,7 @@ export const useWeather = () => {
       });
 
       storage.setLastCity(city);
-    } catch (error) {
+    } catch {
       setWeatherState({
         current: null,
         forecast: null,

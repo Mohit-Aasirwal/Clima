@@ -21,7 +21,7 @@ export default function Home() {
     type: "tween",
     ease: "anticipate",
     duration: 0.5,
-  };
+  } as const;
 
   return (
     <motion.div
@@ -123,7 +123,8 @@ export default function Home() {
                   transition={{ delay: 0.7 }}
                   className="text-gray-400 mt-2"
                 >
-                  Try "Mumbai", "Delhi", "Bangalore", or any other Indian city
+                  Try &apos;Mumbai&apos;, &apos;Delhi&apos;,
+                  &apos;Bangalore&apos;, or any other Indian city
                 </motion.p>
               </motion.div>
             )}

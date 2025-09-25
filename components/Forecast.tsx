@@ -33,7 +33,7 @@ export const Forecast = ({ data }: ForecastProps) => {
         staggerChildren: 0.1,
       },
     },
-  };
+  } as const;
 
   const itemVariants = {
     hidden: { opacity: 0, scale: 0.8 },
@@ -45,7 +45,7 @@ export const Forecast = ({ data }: ForecastProps) => {
         type: "spring",
       },
     },
-  };
+  } as const;
 
   return (
     <AnimatedContainer delay={0.2}>
