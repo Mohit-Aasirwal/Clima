@@ -6,10 +6,46 @@ import { CurrentWeather } from "@/components/CurrentWeather";
 import { Forecast } from "@/components/Forecast";
 import { LoadingIndicator } from "@/components/LoadingIndicator";
 import { ErrorMessage } from "@/components/ErrorMessage";
+import { LocationPermission } from "@/components/LocationPermission";
 import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
 
 export default function Home() {
-  const { weatherState, handleSearch, clearError } = useWeather();
+  const {
+    weatherState,
+    locationState,
+    handleSearch,
+    requestLocationPermission,
+    clearError,
+  } = useWeather();
+  const [showLocationBanner, setShowLocationBanner] = useState(false);
+
+  // Show location banner if no data exists and location permission wasn't previously granted
+  useEffect(() => {
+    if (
+      !weatherState.current &&
+      !locationState.permissionGranted &&
+      !locationState.loading &&
+      !weatherState.loading &&
+      !locationState.error
+    ) {
+      const timer = setTimeout(() => {
+        setShowLocationBanner(true);
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [weatherState.current, locationState, weatherState.loading]);
+
+  const handleGrantPermission = async () => {
+    setShowLocationBanner(false);
+    await requestLocationPermission();
+  };
+
+  const handleDismissLocationBanner = () => {
+    setShowLocationBanner(false);
+    // Don't show again in this session
+  };
 
   const pageVariants = {
     initial: { opacity: 0 },
@@ -52,7 +88,9 @@ export default function Home() {
             transition={{ delay: 0.3 }}
             className="text-gray-600 text-lg"
           >
-            Get current weather and 5-day forecast for Indian cities
+            {weatherState.current
+              ? `Weather for ${weatherState.current.name}, ${weatherState.current.sys.country}`
+              : "Get current weather and 5-day forecast for your location"}
           </motion.p>
         </motion.header>
 
@@ -65,12 +103,24 @@ export default function Home() {
         </motion.div>
 
         <AnimatePresence mode="wait">
+          {showLocationBanner && !weatherState.current && (
+            <LocationPermission
+              onGrantPermission={handleGrantPermission}
+              onDismiss={handleDismissLocationBanner}
+              loading={locationState.loading}
+            />
+          )}
+          {locationState.error && (
+            <ErrorMessage message={locationState.error} onClose={clearError} />
+          )}
           {weatherState.error && (
             <ErrorMessage message={weatherState.error} onClose={clearError} />
           )}
-
-          {weatherState.loading && <LoadingIndicator />}
-
+          {(weatherState.loading || locationState.loading) && (
+            <LoadingIndicator
+              type={locationState.loading ? "location" : "weather"}
+            />
+          )}
           {weatherState.current && !weatherState.loading && (
             <motion.div
               key="weather-data"
@@ -83,12 +133,29 @@ export default function Home() {
               {weatherState.forecast && (
                 <Forecast data={weatherState.forecast} />
               )}
+
+              {/* Current location indicator */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="text-center mt-6"
+              >
+                <div className="inline-flex items-center space-x-2 bg-white/50 backdrop-blur-sm rounded-full px-4 py-2 text-sm text-gray-600">
+                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                  <span>Showing weather for your current location</span>
+                </div>
+              </motion.div>
             </motion.div>
           )}
 
+          {/* Empty state - no data, no loading, no errors */}
           {!weatherState.current &&
             !weatherState.loading &&
-            !weatherState.error && (
+            !locationState.loading &&
+            !weatherState.error &&
+            !locationState.error &&
+            !showLocationBanner && (
               <motion.div
                 key="empty-state"
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -113,18 +180,17 @@ export default function Home() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.5 }}
-                  className="text-gray-500 text-xl"
+                  className="text-gray-500 text-xl mb-2"
                 >
-                  Enter an Indian city name to get started
+                  Welcome to Weather Forecast
                 </motion.p>
                 <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.7 }}
-                  className="text-gray-400 mt-2"
+                  className="text-gray-400"
                 >
-                  Try &apos;Mumbai&apos;, &apos;Delhi&apos;,
-                  &apos;Bangalore&apos;, or any other Indian city
+                  Allow location access or search for a city to get started
                 </motion.p>
               </motion.div>
             )}

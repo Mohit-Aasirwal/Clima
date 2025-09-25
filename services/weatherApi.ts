@@ -22,6 +22,18 @@ export const weatherApi = {
     return response.json();
   },
 
+  async getWeatherByCoords(lat: number, lon: number) {
+    const response = await fetch(
+      `${BASE_URL}/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
+    );
+
+    if (!response.ok) {
+      throw new Error("Location weather data not available");
+    }
+
+    return response.json();
+  },
+
   async getForecast(city: string) {
     const response = await fetch(
       `${BASE_URL}/forecast?q=${encodeURIComponent(
@@ -31,6 +43,18 @@ export const weatherApi = {
 
     if (!response.ok) {
       throw new Error("City not found");
+    }
+
+    return response.json();
+  },
+
+  async getForecastByCoords(lat: number, lon: number) {
+    const response = await fetch(
+      `${BASE_URL}/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
+    );
+
+    if (!response.ok) {
+      throw new Error("Location forecast data not available");
     }
 
     return response.json();

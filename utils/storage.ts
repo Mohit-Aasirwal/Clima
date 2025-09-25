@@ -13,4 +13,14 @@ export const storage = {
     if (typeof window === "undefined") return;
     localStorage.removeItem("lastCity");
   },
+
+  getLocationPermission(): boolean {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("locationPermission") === "granted";
+  },
+
+  setLocationPermission(granted: boolean): void {
+    if (typeof window === "undefined") return;
+    localStorage.setItem("locationPermission", granted ? "granted" : "denied");
+  },
 };
