@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { WeatherData, ForecastData, WeatherState } from "@/types/weather";
+import { WeatherState } from "@/types/weather";
 import { weatherApi } from "@/services/weatherApi";
 import { storage } from "@/utils/storage";
 
@@ -25,7 +25,6 @@ export const useWeather = () => {
     permissionGranted: storage.getLocationPermission(),
   });
 
-  // Get user's current location
   const getCurrentLocation = (): Promise<{ lat: number; lon: number }> => {
     return new Promise((resolve, reject) => {
       if (!navigator.geolocation) {
@@ -69,7 +68,6 @@ export const useWeather = () => {
     });
   };
 
-  // Fetch weather by coordinates
   const fetchWeatherByCoords = async (lat: number, lon: number) => {
     setWeatherState((prev) => ({ ...prev, loading: true, error: null }));
 
@@ -94,10 +92,10 @@ export const useWeather = () => {
         loading: false,
         error: "Unable to fetch weather data for your location.",
       });
+      console.error("Error fetching weather data by coordinates:", error);
     }
   };
 
-  // Handle manual city search
   const handleSearch = async (city: string) => {
     if (!city.trim()) return;
 
@@ -125,37 +123,34 @@ export const useWeather = () => {
         error: "City not found. Please try again.",
       });
       storage.clearLastCity();
+      console.error("Error fetching weather data:", error);
     }
   };
 
-  // Request location permission
   const requestLocationPermission = async () => {
     try {
       const coords = await getCurrentLocation();
       await fetchWeatherByCoords(coords.lat, coords.lon);
     } catch (error) {
-      // Error is already handled in getCurrentLocation
+      console.error("Error requesting location permission:", error);
     }
   };
 
-  // Initialize weather data on component mount
   useEffect(() => {
     const initializeWeatherData = async () => {
       const lastCity = storage.getLastCity();
       const hasLocationPermission = storage.getLocationPermission();
 
-      // Try to get location-based weather first if permission was previously granted
       if (hasLocationPermission) {
         try {
           const coords = await getCurrentLocation();
           await fetchWeatherByCoords(coords.lat, coords.lon);
           return;
         } catch (error) {
-          // Fall back to last city if location fails
+          console.error("Error fetching weather by location:", error);
         }
       }
 
-      // Use last searched city as fallback
       if (lastCity) {
         await handleSearch(lastCity);
       }

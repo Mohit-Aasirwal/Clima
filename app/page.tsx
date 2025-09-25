@@ -20,7 +20,6 @@ export default function Home() {
   } = useWeather();
   const [showLocationBanner, setShowLocationBanner] = useState(false);
 
-  // Show location banner if no data exists and location permission wasn't previously granted
   useEffect(() => {
     if (
       !weatherState.current &&
@@ -44,7 +43,6 @@ export default function Home() {
 
   const handleDismissLocationBanner = () => {
     setShowLocationBanner(false);
-    // Don't show again in this session
   };
 
   const pageVariants = {
